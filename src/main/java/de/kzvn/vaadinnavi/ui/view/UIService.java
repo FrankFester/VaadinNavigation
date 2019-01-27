@@ -62,6 +62,7 @@ public class UIService {
      */
     public void abmelden(Class navClass) {
         UI ui = UI.getCurrent().getUI().get();
+        this.sessionService.removeLoginName();
         ui.navigate(navClass);
         ui.getSession().close();
     }

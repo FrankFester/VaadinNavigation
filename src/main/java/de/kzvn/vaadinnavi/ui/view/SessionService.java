@@ -14,6 +14,7 @@ import com.vaadin.flow.spring.annotation.VaadinSessionScope;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -26,6 +27,9 @@ public class SessionService implements SessionDestroyListener, SessionInitListen
     
     private static final Logger LOG = LoggerFactory.getLogger(SessionService.class);
 
+    @Autowired
+    UserService userService;
+    
     // Session basiert
     private String loginName;
 
@@ -41,8 +45,15 @@ public class SessionService implements SessionDestroyListener, SessionInitListen
 
     public void setLoginName(String loginName) {
         this.loginName = loginName;
+        userService.addUserLoggedIn(loginName);
     }
 
+    public void removeLoginName() {
+        userService.removeUserLogff(this.loginName);
+         this.loginName = null;
+   }
+
+    
     @Override
     public void sessionDestroy(SessionDestroyEvent event) {
         LOG.info("Session Destroyed....");

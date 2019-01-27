@@ -38,6 +38,8 @@ import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.lumo.Lumo;
 import de.kzvn.vaadinnavi.ui.view.LoginView;
 import de.kzvn.vaadinnavi.ui.view.UIService;
+import de.kzvn.vaadinnavi.ui.view.UserService;
+import java.util.HashMap;
 import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,7 +61,9 @@ public class MainLayout extends Div implements RouterLayout, BeforeEnterObserver
 
     private final static String APPLICATION_BACKGROUND_COLOR = "#F4F4F4";
 
+    private UserService userService;
     private UIService uiService;
+    
     private Label userName;
     private Button headerOffButton;
     private HorizontalLayout userHl;
@@ -70,8 +74,9 @@ public class MainLayout extends Div implements RouterLayout, BeforeEnterObserver
     private HorizontalLayout headerUser;
     private ProgressBar progressBar;
 
-    public MainLayout(@Autowired UIService service) {
+    public MainLayout(@Autowired UIService service,@Autowired UserService userService) {
         this.uiService = service;
+        this.userService = userService;
         init();
     }
 
@@ -111,8 +116,10 @@ public class MainLayout extends Div implements RouterLayout, BeforeEnterObserver
         logOffButton.getElement().setAttribute("title", "Von der Anwendung abmelden.");
         Icon userIcon = new Icon(VaadinIcon.USER);
         String name = (this.uiService == null) ? "" : this.uiService.getLoginName();
+        String loggedIn = (this.userService == null) ? "" : this.userService.getUserDateAsString(name);
         this.userName = new Label(name);
         this.userName.getElement().setAttribute("id", "username");
+        this.userName.getElement().setAttribute("title", "Letzte Anmeldung "+loggedIn);
         userName.getElement().getStyle().set("margin-top", "10px");
         logOffButton.getElement().getStyle().set("margin-top", "10px");
         userIcon.getElement().getStyle().set("margin-top", "10px");
@@ -172,6 +179,11 @@ public class MainLayout extends Div implements RouterLayout, BeforeEnterObserver
         if (pageTitle != null && !pageTitle.isEmpty()) {
             content.getElement().appendChild(new H2(pageTitle).getElement());
         }
+        HashMap<String, UserService.User> userListe = this.userService.getUserMap();
+        userListe.forEach( (s,u)-> {
+            content.getElement().appendChild(new HorizontalLayout(new H6(s),new Label(u.getLoginDate().toString()),new Label("Status:"+u.isLoggedIn())).getElement());
+        });
+        
         content.getElement().appendChild(hasElement.getElement());
     }
 

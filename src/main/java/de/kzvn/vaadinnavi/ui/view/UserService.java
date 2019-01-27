@@ -85,6 +85,19 @@ public class UserService {
 
    }
     
+    public User getUser(String userName) {
+        return this.userMap.get(userName);
+    }
+
+    public String getUserDateAsString(String userName) {
+        if(userName != null && !userName.isEmpty()) {
+            User u = this.userMap.get(userName);
+            if (u != null) {
+                return u.getLoginDate().toString();
+            } else return "";
+        } else return "";
+    }
+    
     public void removeUserLogff(String userName) {
         User u = userMap.get(userName);
         if(u != null) {
