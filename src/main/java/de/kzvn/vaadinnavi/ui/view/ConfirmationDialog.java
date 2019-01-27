@@ -1,38 +1,31 @@
-/*
- * Copyright 2000-2017 Vaadin Ltd.
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
- */
 package de.kzvn.vaadinnavi.ui.view;
 
-import java.io.Serializable;
-import java.util.function.Consumer;
-
+/**
+ *
+ * @author fester
+ */
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.shared.Registration;
 
 /**
- * A generic dialog for confirming or cancelling an action.
+ * Server-side component for the confirm element.
  *
- * @param <T>
- *            The type of the action's subject
+ * @author Frank Fester
  */
-class ConfirmationDialog extends Dialog {
+@Tag("kzvn-confirmation-dialog")
+public class ConfirmationDialog extends Component {
+
+    private static final long serialVersionUID = 1L;
+
+    private final Dialog dialog;
 
     private final H3 titleField = new H3();
     private final Div messageLabel = new Div();
@@ -45,83 +38,54 @@ class ConfirmationDialog extends Dialog {
     private static final Runnable NO_OP = () -> {
     };
 
-    /**
-     * Constructor.
-     */
     public ConfirmationDialog() {
-        setCloseOnEsc(true);
-        setCloseOnOutsideClick(false);
-
-        confirmButton.addClickListener(e -> close());
+        this.dialog = new Dialog();
+        this.dialog.setCloseOnEsc(true);
+        this.dialog.setCloseOnOutsideClick(false);
+        confirmButton.addClickListener(e -> this.dialog.close());
         confirmButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
         confirmButton.setAutofocus(true);
-        cancelButton.addClickListener(e -> close());
+        cancelButton.addClickListener(e -> this.dialog.close());
         cancelButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
-
-        HorizontalLayout buttonBar = new HorizontalLayout(confirmButton,
-                cancelButton);
+        HorizontalLayout buttonBar = new HorizontalLayout(confirmButton, cancelButton);
         buttonBar.setClassName("buttons confirm-buttons");
-
-        Div labels = new Div(messageLabel, extraMessageLabel);
+        Div labels = new Div(messageLabel, extraMessageLabel, new Div(new Label("")));
         labels.setClassName("confirm-text");
-
         titleField.setClassName("confirm-title");
-
-        add(titleField, labels, buttonBar);
+        this.dialog.add(titleField, labels, buttonBar);
     }
 
-    /**
-     * Opens the confirmation dialog.
-     *
-     * The dialog will display the given title and message(s), then call
-     * <code>confirmHandler</code> if the Confirm button is clicked, or
-     * <code>cancelHandler</code> if the Cancel button is clicked.
-     *
-     * @param title
-     *            The title text
-     * @param message
-     *            Detail message (optional, may be empty)
-     * @param additionalMessage
-     *            Additional message (optional, may be empty)
-     * @param actionName
-     *            The action name to be shown on the Confirm button
-     * @param isDisruptive
-     *            True if the action is disruptive, such as deleting an item
-     * @param item
-     *            The subject of the action
-     * @param confirmHandler
-     *            The confirmation handler function
-     * @param cancelHandler
-     *            The cancellation handler function
-     */
-    public void prepare(String title, String message, String additionalMessage,
-            String actionName, boolean isDisruptive, Consumer<T> confirmHandler, Runnable cancelHandler) {
+    public void open(String title, String message, String additionalMessage, String actionName, String cancelName, boolean isDisruptive,
+            Runnable confirmHandler, Runnable cancelHandler) {
         titleField.setText(title);
         messageLabel.setText(message);
         extraMessageLabel.setText(additionalMessage);
         confirmButton.setText(actionName);
+        cancelButton.setText(cancelName);
 
         Runnable cancelAction = cancelHandler == null ? NO_OP : cancelHandler;
+        Runnable confirmAction = confirmHandler == null ? NO_OP : confirmHandler;
 
         if (registrationForConfirm != null) {
             registrationForConfirm.remove();
         }
-        registrationForConfirm = confirmButton
-                .addClickListener(e -> confirmHandler.accept(item));
+        registrationForConfirm = confirmButton.addClickListener(e -> confirmAction.run());
+
         if (registrationForCancel != null) {
             registrationForCancel.remove();
         }
-        registrationForCancel = cancelButton
-                .addClickListener(e -> cancelAction.run());
-        this.addOpenedChangeListener(e -> {
+        registrationForCancel = cancelButton.addClickListener(e -> cancelAction.run());
+
+        this.dialog.addOpenedChangeListener(e -> {
             if (!e.isOpened()) {
                 cancelAction.run();
             }
         });
+
         confirmButton.removeThemeVariants(ButtonVariant.LUMO_ERROR);
         if (isDisruptive) {
             confirmButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
         }
+        this.dialog.open();
     }
-    
 }

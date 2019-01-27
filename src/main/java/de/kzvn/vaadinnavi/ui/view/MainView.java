@@ -28,11 +28,9 @@ public class MainView extends Div implements BeforeEnterObserver {
     private static final Logger LOG = LoggerFactory.getLogger(MainView.class);
 
     private UIService uiService;
-    private ConfirmUtil confirm;
-
-    public MainView(@Autowired UIService uiService, @Autowired ConfirmUtil confirm) {
+    
+    public MainView(@Autowired UIService uiService) {
         this.uiService = uiService;
-        this.confirm = confirm;
         init();
     }
 

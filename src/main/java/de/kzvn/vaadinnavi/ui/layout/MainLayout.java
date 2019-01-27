@@ -42,7 +42,6 @@ import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import de.kzvn.vaadinnavi.ui.view.ConfirmUtil;
 import org.springframework.scheduling.annotation.Scheduled;
 
 /**
@@ -61,7 +60,6 @@ public class MainLayout extends Div implements RouterLayout, BeforeEnterObserver
     private final static String APPLICATION_BACKGROUND_COLOR = "#F4F4F4";
 
     private UIService uiService;
-    private ConfirmUtil confirm;
     private Label userName;
     private Button headerOffButton;
     private HorizontalLayout userHl;
@@ -72,9 +70,8 @@ public class MainLayout extends Div implements RouterLayout, BeforeEnterObserver
     private HorizontalLayout headerUser;
     private ProgressBar progressBar;
 
-    public MainLayout(@Autowired UIService service, @Autowired ConfirmUtil confirm) {
+    public MainLayout(@Autowired UIService service) {
         this.uiService = service;
-        this.confirm = confirm;
         init();
     }
 
@@ -241,7 +238,7 @@ public class MainLayout extends Div implements RouterLayout, BeforeEnterObserver
         LOG.info("Before LEAVE....");
         if (this.uiService.hasChanges()) {
             ContinueNavigationAction action = event.postpone();
-            confirm.zeigeSeiteVerlassenDialog(null, () -> {
+            this.uiService.zeigeSeiteVerlassenDialog(null, () -> {
                 // ggf. Datenzurücksetzen oder merken...
                 uiService.setHasChanges(false);
                 // Route weitergehen
@@ -265,14 +262,12 @@ public class MainLayout extends Div implements RouterLayout, BeforeEnterObserver
                 // AutoLogoff
                 uiService.setHasChanges(false);
                 ui.getSession().accessSynchronously(() -> {
-                    uiService.abmelden(ui, LoginView.class);
-                   // ui.getSession().close();
+                    uiService.abmelden(LoginView.class);
                 });
             }
             ui.getSession().access(() -> {
             this.progressBar.getElement().setAttribute("value", ""+progress);
                 this.progressBar.setValue(progress);
-         //       ui.push();
             });
             LOG.info("Progress {}", progress);
         }
